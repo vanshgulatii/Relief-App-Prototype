@@ -1,1 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relief — Grow Calm</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
+:root {
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+}
+
+html { scroll-behavior: auto; }
+
+body {
+  background: #000;
+  font-family: var(--sans);
+  overflow-x: hidden;
+}
+
+/* ── SCROLL CONTAINER ── */
+#scroll-track {
+  height: 700vh;
+  position: relative;
+}
+
+/* ── STICKY STAGE ── */
+#stage {
+  position: sticky;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── SKY CANVAS ── */
+#sky {
+  position: absolute;
+  inset: 0;
+  transition: none;
+}
+
+/* ── STARS ── */
+#stars-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ── MAIN TREE CANVAS ── */
+#tree-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ── PARTICLE LAYER ── */
+#particle-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* ── GROUND ── */
+#ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  pointer-events: none;
+}
+
+/* ── SCROLL INDICATOR ── */
+#scroll-hint {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 1;
+  transition: opacity 0.5s;
+  z-index: 50;
+}
+#scroll-hint span {
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(200,220,200,0.5);
+}
+.scroll-arrow {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(150,200,150,0.6), transparent);
+  animation: arrow-drop 1.8s ease-in-out infinite;
+}
+@keyframes arrow-drop {
+  0% { transform: scaleY(0); transform-origin: top; opacity: 0; }
+  50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  100% { transform: scaleY(1); transform-origin: bottom; opacity: 0; }
+}
+
+/* ── PROGRESS BAR ── */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #2d5a3d, #7a9e7e, #c9a84c);
+  z-index: 200;
+  transition: width 0.1s linear;
+}
+
+/* ── NAV ── */
+#nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 28px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 100;
+  mix-blend-mode: normal;
+}
+#nav-logo {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  color: rgba(245,240,232,0.9);
+}
+#nav-cta {
+  padding: 9px 22px;
+  border: 1px solid rgba(122,158,126,0.5);
+  border-radius: 20px;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: rgba(168,197,160,0.9);
+  text-decoration: none;
+  transition: all 0.3s;
+  backdrop-filter: blur(6px);
+  background: rgba(13,35,24,0.3);
+}
+#nav-cta:hover { background: rgba(45,90,61,0.5); color: #f5f0e8; }
+
+/* ── TEXT PANELS ── */
+.text-panel {
+  position: absolute;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  will-change: opacity, transform;
+}
+.text-panel.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.text-panel.fade-out {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.panel-eyebrow {
+  font-size: 0.62rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(122,158,126,0.8);
+  margin-bottom: 14px;
+  font-family: var(--sans);
+}
+.panel-headline {
+  font-family: var(--serif);
+  font-weight: 300;
+  line-height: 1.2;
+  color: #f5f0e8;
+}
+.panel-body {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: rgba(200,220,200,0.7);
+  margin-top: 16px;
+  font-weight: 300;
+  max-width: 420px;
+}
+
+/* Panel 0 – Hero */
+#p0 {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -42%);
+  text-align: center;
+  width: 90vw;
+  max-width: 700px;
+}
+#p0 .panel-headline { font-size: clamp(3rem, 8vw, 7rem); }
+#p0 .panel-body { margin: 16px auto 0; font-size: 1rem; }
+#p0.visible { transform: translate(-50%, -44%); }
+#p0.fade-out { transform: translate(-50%, -54%); }
+
+/* Panel 1 – Seedling */
+#p1 { bottom: 22%; left: 8%; max-width: 380px; }
+#p1 .panel-headline { font-size: clamp(2rem, 5vw, 3.5rem); }
+
+/* Panel 2 – Growing */
+#p2 { top: 18%; right: 8%; max-width: 380px; text-align: right; }
+#p2 .panel-headline { font-size: clamp(1.8rem, 4vw, 3rem); }
+#p2 .panel-body { margin-left: auto; }
+
+/* Panel 3 – Music / Sound */
+#p3 { bottom: 25%; left: 8%; max-width: 400px; }
+#p3 .panel-headline { font-size: clamp(1.8rem, 4vw, 3rem); }
+
+/* Panel 4 – Water / Heal */
+#p4 { top: 16%; right: 8%; max-width: 380px; text-align: right; }
+#p4 .panel-headline { font-size: clamp(1.8rem, 4vw, 3rem); }
+#p4 .panel-body { margin-left: auto; }
+
+/* Panel 5 – Impact */
+#p5 {
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 90vw;
+}
+#p5.visible { transform: translate(-50%, -50%); }
+#p5.fade-out { transform: translate(-50%, -60%); }
+#p5 .panel-headline { font-size: clamp(2rem, 5vw, 4rem); }
+
+/* Panel 6 – CTA */
+#p6 {
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  width: 90vw;
+}
+#p6.visible { transform: translate(-50%, -50%); }
+#p6.fade-out { transform: translate(-50%, -60%); }
+#p6 .panel-headline { font-size: clamp(2.5rem, 7vw, 6rem); }
+
+/* ── STATS ROW (panel 5) ── */
+#stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+.stat-item {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: all 0.6s ease;
+  transition-delay: var(--d, 0s);
+}
+.stat-item.popped { opacity: 1; transform: translateY(0); }
+.stat-num {
+  font-family: var(--serif);
+  font-size: 3rem;
+  font-weight: 300;
+  color: #a8c5a0;
+  line-height: 1;
+}
+.stat-lbl {
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(122,158,126,0.7);
+  margin-top: 6px;
+}
+
+/* ── CTA BUTTON ── */
+.cta-btn {
+  display: inline-block;
+  margin-top: 36px;
+  padding: 16px 44px;
+  background: rgba(45,90,61,0.8);
+  border: 1px solid rgba(122,158,126,0.6);
+  border-radius: 30px;
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f5f0e8;
+  text-decoration: none;
+  transition: all 0.3s;
+  backdrop-filter: blur(8px);
+  pointer-events: all;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.7s 0.4s, transform 0.7s 0.4s, background 0.3s;
+}
+#p6.visible .cta-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+.cta-btn:hover { background: rgba(90,150,108,0.7); letter-spacing: 0.18em; }
+
+/* ── SOUND WAVE VISUAL (panel 3) ── */
+#sound-waves {
+  position: absolute;
+  bottom: 28%;
+  left: calc(8% + 420px);
+  width: 200px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.8s;
+  pointer-events: none;
+  z-index: 55;
+}
+#sound-waves.visible { opacity: 1; }
+.sw-bar {
+  width: 4px;
+  border-radius: 2px;
+  background: rgba(122,158,126,0.6);
+  animation: sw-dance var(--s,0.8s) ease-in-out infinite alternate;
+  animation-delay: var(--dl, 0s);
+}
+@keyframes sw-dance {
+  from { height: var(--mn, 6px); }
+  to { height: var(--mx, 36px); }
+}
+
+/* ── WATER DROPS LAYER ── */
+#water-drops {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 53;
+  opacity: 0;
+  transition: opacity 0.8s;
+}
+#water-drops.visible { opacity: 1; }
+
+/* ── SENSOR BADGE ── */
+#sensor-badge {
+  position: absolute;
+  bottom: 32%;
+  right: calc(8% + 360px);
+  background: rgba(10,25,15,0.85);
+  border: 1px solid rgba(74,201,122,0.3);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.62rem;
+  color: rgba(74,201,122,0.9);
+  letter-spacing: 0.1em;
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.5s 0.3s;
+  pointer-events: none;
+  z-index: 55;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+}
+#sensor-badge.visible { opacity: 1; transform: scale(1); }
+#sensor-dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #4ac97a;
+  margin-right: 5px;
+  animation: blink 1.4s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ── MOON / SUN ── */
+#celestial {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transition: none;
+}
+
+/* ── MIST ── */
+#mist {
+  position: absolute;
+  bottom: 15%;
+  left: 0; right: 0;
+  height: 80px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 2s;
+}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<nav id="nav">
+  <div id="nav-logo">Relief</div>
+  <a href="#" id="nav-cta">Begin free trial</a>
+</nav>
+
+<div id="scroll-track">
+  <div id="stage">
+
+    <!-- Sky -->
+    <canvas id="sky"></canvas>
+
+    <!-- Stars -->
+    <canvas id="stars-layer"></canvas>
+
+    <!-- Celestial body (moon/sun) -->
+    <div id="celestial"></div>
+
+    <!-- Mist -->
+    <div id="mist"></div>
+
+    <!-- Ground -->
+    <canvas id="ground"></canvas>
+
+    <!-- Main tree -->
+    <canvas id="tree-canvas"></canvas>
+
+    <!-- Particles (fireflies / rain) -->
+    <canvas id="particle-layer"></canvas>
+
+    <!-- Sound waves -->
+    <div id="sound-waves"></div>
+
+    <!-- Water drops layer -->
+    <div id="water-drops"></div>
+
+    <!-- Sensor badge -->
+    <div id="sensor-badge">
+      <span id="sensor-dot"></span>LIVE · Oak #4217 · Schwarzwald
+      <br><span style="color:rgba(122,158,126,0.7);margin-top:3px;display:block">Soil moisture 84% · 18.2°C</span>
+    </div>
+
+    <!-- Text panels -->
+    <div class="text-panel" id="p0">
+      <div class="panel-eyebrow">Mental wellness × Black Forest, Germany</div>
+      <div class="panel-headline">Find calm<br><em style="color:#7a9e7e">in a living</em><br>forest</div>
+      <div class="panel-body">Your real tree is waiting in the Schwarzwald. Every scroll is a breath. Every interaction, a moment of genuine peace.</div>
+    </div>
+
+    <div class="text-panel" id="p1">
+      <div class="panel-eyebrow">01 — Your tree awakens</div>
+      <div class="panel-headline">A seed.<br>Your calm<br>begins here.</div>
+      <div class="panel-body">Somewhere in the Black Forest, a real oak tree is connected to you through sensors, cameras, and water harvesting systems.</div>
+    </div>
+
+    <div class="text-panel" id="p2">
+      <div class="panel-eyebrow">02 — Watch it grow</div>
+      <div class="panel-headline">Every day<br>you tend it,<br>it tends you.</div>
+      <div class="panel-body">The tree's health is your health. As you build consistency, your tree flourishes — and so does your nervous system.</div>
+    </div>
+
+    <div class="text-panel" id="p3">
+      <div class="panel-eyebrow">03 — Tree music</div>
+      <div class="panel-headline">Listen to<br>what the<br>forest feels.</div>
+      <div class="panel-body">Music generated live from plant bioelectric signals. No two sessions sound the same. Clinically designed for anxiety and ADHD.</div>
+    </div>
+
+    <div class="text-panel" id="p4">
+      <div class="panel-eyebrow">04 — Water your tree</div>
+      <div class="panel-headline">One tap.<br>Real water.<br>Real roots.</div>
+      <div class="panel-body">Tap to trigger real water delivery via harvested rainwater. IoT sensors confirm the drop within seconds. Ritual becomes medicine.</div>
+    </div>
+
+    <div class="text-panel" id="p5">
+      <div class="panel-eyebrow">05 — Your impact</div>
+      <div class="panel-headline">Small rituals,<br>real change.</div>
+      <div id="stats-row">
+        <div class="stat-item" style="--d:0.1s">
+          <div class="stat-num" id="stat-trees">0</div>
+          <div class="stat-lbl">Trees adopted</div>
+        </div>
+        <div class="stat-item" style="--d:0.25s">
+          <div class="stat-num" id="stat-water">0L</div>
+          <div class="stat-lbl">Water delivered</div>
+        </div>
+        <div class="stat-item" style="--d:0.4s">
+          <div class="stat-num" id="stat-calm">0%</div>
+          <div class="stat-lbl">Users report less anxiety</div>
+        </div>
+        <div class="stat-item" style="--d:0.55s">
+          <div class="stat-num" id="stat-co2">0kg</div>
+          <div class="stat-lbl">CO₂ sequestered</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="text-panel" id="p6">
+      <div class="panel-eyebrow">Your forest is waiting</div>
+      <div class="panel-headline" style="color:#f5f0e8">Begin your<br><em style="color:#c9a84c">Relief</em></div>
+      <a class="cta-btn" href="#">Plant your tree — 7 days free</a>
+      <div style="margin-top:16px;font-size:0.65rem;letter-spacing:0.1em;color:rgba(122,158,126,0.5)">Then €9.99/month · Cancel anytime</div>
+    </div>
+
+    <!-- Scroll hint -->
+    <div id="scroll-hint">
+      <span>Scroll to grow</span>
+      <div class="scroll-arrow"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  SETUP
+// ════════════════════════════════════
+const track   = document.getElementById('scroll-track');
+const stage   = document.getElementById('stage');
+const skyC    = document.getElementById('sky');
+const starsC  = document.getElementById('stars-layer');
+const treeC   = document.getElementById('tree-canvas');
+const particC = document.getElementById('particle-layer');
+const groundC = document.getElementById('ground');
+const skyCtx  = skyC.getContext('2d');
+const starsCtx= starsC.getContext('2d');
+const treeCtx = treeC.getContext('2d');
+const particCtx = particC.getContext('2d');
+const groundCtx = groundC.getContext('2d');
+
+let W = window.innerWidth, H = window.innerHeight;
+let prog = 0; // 0..1
+let stars = [];
+let fireflies = [];
+let raindrops = [];
+let waterDrops = [];
+
+function resize() {
+  W = window.innerWidth; H = window.innerHeight;
+  [skyC, starsC, treeC, particC, groundC].forEach(c => {
+    c.width = W; c.height = H;
+  });
+  buildStars();
+}
+
+// ════════════════════════════════════
+//  STARS
+// ════════════════════════════════════
+function buildStars() {
+  stars = [];
+  for (let i = 0; i < 280; i++) {
+    stars.push({
+      x: Math.random() * W,
+      y: Math.random() * H * 0.65,
+      r: Math.random() * 1.4 + 0.3,
+      twinkle: Math.random() * Math.PI * 2,
+      speed: 0.4 + Math.random() * 0.8
+    });
+  }
+}
+
+// ════════════════════════════════════
+//  FIREFLIES
+// ════════════════════════════════════
+function buildFireflies() {
+  fireflies = [];
+  for (let i = 0; i < 38; i++) {
+    fireflies.push({
+      x: W * 0.2 + Math.random() * W * 0.6,
+      y: H * 0.28 + Math.random() * H * 0.5,
+      vx: (Math.random()-0.5) * 0.5,
+      vy: (Math.random()-0.5) * 0.3,
+      phase: Math.random() * Math.PI * 2,
+      phaseSpeed: 0.02 + Math.random() * 0.04,
+      r: 2 + Math.random() * 2
+    });
+  }
+}
+
+// ════════════════════════════════════
+//  RAIN DROPS
+// ════════════════════════════════════
+function buildRain() {
+  raindrops = [];
+  for (let i = 0; i < 120; i++) {
+    raindrops.push(newRaindrop());
+  }
+}
+function newRaindrop() {
+  return {
+    x: Math.random() * W,
+    y: Math.random() * H,
+    len: 10 + Math.random() * 20,
+    speed: 8 + Math.random() * 10,
+    opacity: 0.1 + Math.random() * 0.3
+  };
+}
+
+// ════════════════════════════════════
+//  SKY COLORS
+// ════════════════════════════════════
+// prog segments: 0-0.14 = hero night, 0.14-0.28 = deep night (seedling)
+// 0.28-0.42 = growing (deep night→twilight), 0.42-0.57 = music (twilight)
+// 0.57-0.71 = water (pre-dawn blue), 0.71-0.85 = impact (golden dawn)
+// 0.85-1.0 = cta (golden day)
+const skyKeyframes = [
+  { p: 0.00, top: [2,8,18],    bot: [5,20,30] },
+  { p: 0.14, top: [2,8,18],    bot: [5,20,30] },
+  { p: 0.28, top: [3,10,22],   bot: [8,26,40] },
+  { p: 0.42, top: [8,18,38],   bot: [18,45,65] },
+  { p: 0.57, top: [5,22,50],   bot: [15,55,90] },
+  { p: 0.71, top: [35,28,15],  bot: [70,55,25] },
+  { p: 0.85, top: [55,38,12],  bot: [120,80,20] },
+  { p: 1.00, top: [20,50,35],  bot: [40,90,55] }
+];
+
+function lerpRGB(a, b, t) {
+  return [
+    Math.round(a[0] + (b[0]-a[0])*t),
+    Math.round(a[1] + (b[1]-a[1])*t),
+    Math.round(a[2] + (b[2]-a[2])*t)
+  ];
+}
+function rgb(arr) { return `rgb(${arr[0]},${arr[1]},${arr[2]})`; }
+
+function getSkyColors(p) {
+  let k0 = skyKeyframes[0], k1 = skyKeyframes[skyKeyframes.length-1];
+  for (let i = 0; i < skyKeyframes.length-1; i++) {
+    if (p >= skyKeyframes[i].p && p <= skyKeyframes[i+1].p) {
+      k0 = skyKeyframes[i]; k1 = skyKeyframes[i+1];
+      break;
+    }
+  }
+  const t = k1.p === k0.p ? 0 : (p - k0.p) / (k1.p - k0.p);
+  return {
+    top: lerpRGB(k0.top, k1.top, t),
+    bot: lerpRGB(k0.bot, k1.bot, t)
+  };
+}
+
+// ════════════════════════════════════
+//  DRAW SKY
+// ════════════════════════════════════
+function drawSky(p) {
+  const { top, bot } = getSkyColors(p);
+  const grad = skyCtx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, rgb(top));
+  grad.addColorStop(1, rgb(bot));
+  skyCtx.fillStyle = grad;
+  skyCtx.fillRect(0, 0, W, H);
+}
+
+// ════════════════════════════════════
+//  DRAW STARS
+// ════════════════════════════════════
+function drawStars(p, t) {
+  // Stars visible from 0-0.65, fade out toward golden hour
+  const starAlpha = p < 0.55 ? 1 : Math.max(0, 1 - (p-0.55)/0.15);
+  starsCtx.clearRect(0, 0, W, H);
+  if (starAlpha <= 0) return;
+  stars.forEach(s => {
+    const twinkle = 0.5 + 0.5 * Math.sin(s.twinkle + t * s.speed * 0.05);
+    starsCtx.beginPath();
+    starsCtx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    starsCtx.fillStyle = `rgba(220,235,220,${twinkle * starAlpha * 0.85})`;
+    starsCtx.fill();
+  });
+}
+
+// ════════════════════════════════════
+//  DRAW CELESTIAL (moon/sun)
+// ════════════════════════════════════
+function updateCelestial(p) {
+  const cel = document.getElementById('celestial');
+  // Moon: p 0-0.55, arc from bottom-right up to top-center
+  // Sun: p 0.65-1, arc from bottom-left up to upper-right
+  if (p < 0.62) {
+    const moonProgress = p / 0.62;
+    const angle = Math.PI - moonProgress * Math.PI * 0.9;
+    const cx = W * 0.5 + Math.cos(angle) * W * 0.38;
+    const cy = H * 0.85 - Math.sin(Math.max(0, angle)) * H * 0.72;
+    const moonAlpha = p < 0.55 ? 1 : Math.max(0, 1-(p-0.55)/0.08);
+    const sz = 36;
+    cel.style.cssText = `
+      position:absolute;
+      width:${sz}px; height:${sz}px;
+      left:${cx - sz/2}px; top:${cy - sz/2}px;
+      border-radius:50%;
+      background:rgba(230,240,220,${moonAlpha * 0.92});
+      box-shadow:0 0 ${14 + Math.sin(Date.now()*0.001)*6}px rgba(200,230,200,${moonAlpha*0.4});
+      pointer-events:none; z-index:5;
+    `;
+  } else {
+    const sunProgress = (p - 0.65) / 0.35;
+    const sunP = Math.max(0, Math.min(1, sunProgress));
+    const angle = Math.PI + sunP * Math.PI * 0.55;
+    const cx = W * 0.18 + Math.cos(Math.PI - sunP * Math.PI * 0.7) * W * 0.45;
+    const cy = H * 0.88 - Math.sin(sunP * Math.PI * 0.55) * H * 0.65;
+    const sunAlpha = Math.min(1, (p-0.65)/0.08);
+    const sunSize = 44 + sunP * 10;
+    cel.style.cssText = `
+      position:absolute;
+      width:${sunSize}px; height:${sunSize}px;
+      left:${cx - sunSize/2}px; top:${cy - sunSize/2}px;
+      border-radius:50%;
+      background:rgba(255,${Math.round(210 - sunP*40)},${Math.round(80 - sunP*50)},${sunAlpha*0.95});
+      box-shadow:0 0 ${40 + sunP*30}px rgba(255,190,60,${sunAlpha*0.35}), 0 0 ${80 + sunP*60}px rgba(255,160,30,${sunAlpha*0.15});
+      pointer-events:none; z-index:5;
+    `;
+  }
+}
+
+// ════════════════════════════════════
+//  DRAW GROUND
+// ════════════════════════════════════
+function drawGround(p) {
+  groundCtx.clearRect(0, 0, W, H);
+  // Ground color evolves with sky
+  const gAlpha = Math.min(1, p < 0.7 ? 0.75 : 0.75 + (p-0.7)*0.8);
+  const gGreen = Math.round(20 + p * 50);
+  const gGreen2 = Math.round(10 + p * 35);
+  const gH = H * 0.17; // ground height
+  const gy = H - gH;
+
+  // Main ground gradient
+  const grad = groundCtx.createLinearGradient(0, gy, 0, H);
+  grad.addColorStop(0, `rgba(${10+p*30},${gGreen},${15+p*20},${gAlpha})`);
+  grad.addColorStop(1, `rgba(5,${gGreen2},8,${gAlpha})`);
+  groundCtx.fillStyle = grad;
+
+  // Curved ground edge
+  groundCtx.beginPath();
+  groundCtx.moveTo(0, gy + 30);
+  groundCtx.bezierCurveTo(W*0.25, gy-15, W*0.75, gy+5, W, gy+20);
+  groundCtx.lineTo(W, H);
+  groundCtx.lineTo(0, H);
+  groundCtx.closePath();
+  groundCtx.fill();
+
+  // Ground glow / mist when golden hour
+  if (p > 0.65) {
+    const glowA = (p - 0.65) / 0.35 * 0.15;
+    const glowGrad = groundCtx.createRadialGradient(W/2, gy+10, 0, W/2, gy+10, W*0.5);
+    glowGrad.addColorStop(0, `rgba(200,160,50,${glowA})`);
+    glowGrad.addColorStop(1, 'rgba(200,160,50,0)');
+    groundCtx.fillStyle = glowGrad;
+    groundCtx.fillRect(0, gy - 40, W, gH + 40);
+  }
+}
+
+// ════════════════════════════════════
+//  DRAW TREE
+// ════════════════════════════════════
+function drawTree(p) {
+  treeCtx.clearRect(0, 0, W, H);
+  // Tree grows: p 0.05->1 maps to scale 0->1
+  const treeP = Math.max(0, Math.min(1, (p - 0.05) / 0.75));
+  if (treeP <= 0) return;
+
+  const cx = W / 2;
+  const groundY = H - H * 0.17 + 10;
+
+  // Trunk
+  const trunkH = treeP * H * 0.32;
+  const trunkW = 6 + treeP * 22;
+  const trunkTop = groundY - trunkH;
+
+  treeCtx.save();
+  // Trunk color shifts with sky
+  const trunkLight = p > 0.7 ? 1 : 0;
+  const tBrown = [80 + trunkLight*30, 52 + trunkLight*20, 22 + trunkLight*10];
+
+  const trunkGrad = treeCtx.createLinearGradient(cx - trunkW/2, trunkTop, cx + trunkW/2, groundY);
+  trunkGrad.addColorStop(0, `rgb(${tBrown[0]},${tBrown[1]},${tBrown[2]})`);
+  trunkGrad.addColorStop(0.4, `rgb(${tBrown[0]+20},${tBrown[1]+12},${tBrown[2]+5})`);
+  trunkGrad.addColorStop(1, `rgb(${tBrown[0]-10},${tBrown[1]-8},${tBrown[2]-4})`);
+  treeCtx.fillStyle = trunkGrad;
+
+  treeCtx.beginPath();
+  treeCtx.moveTo(cx - trunkW/2, groundY);
+  treeCtx.quadraticCurveTo(cx - trunkW/2 - 4, groundY - trunkH*0.5, cx - trunkW/2 + 2, trunkTop);
+  treeCtx.quadraticCurveTo(cx, trunkTop - 3, cx + trunkW/2 - 2, trunkTop);
+  treeCtx.quadraticCurveTo(cx + trunkW/2 + 4, groundY - trunkH*0.5, cx + trunkW/2, groundY);
+  treeCtx.closePath();
+  treeCtx.fill();
+
+  // Roots (visible when grown enough)
+  if (treeP > 0.35) {
+    const rootA = Math.min(1, (treeP - 0.35) / 0.3) * 0.7;
+    treeCtx.strokeStyle = `rgba(${tBrown[0]},${tBrown[1]},${tBrown[2]},${rootA})`;
+    treeCtx.lineWidth = 3;
+    treeCtx.lineCap = 'round';
+    const roots = [[-1.4, 0.18], [-0.9, 0.25], [-0.5, 0.2], [0.5, 0.2], [0.9, 0.25], [1.4, 0.18]];
+    roots.forEach(([dx, dy]) => {
+      treeCtx.beginPath();
+      treeCtx.moveTo(cx + dx * trunkW/2, groundY);
+      treeCtx.quadraticCurveTo(
+        cx + dx * trunkW * 2, groundY + 15,
+        cx + dx * trunkW * 3.5, groundY + dy * H * 0.08
+      );
+      treeCtx.stroke();
+    });
+  }
+
+  // Branches (emerge at treeP > 0.25)
+  if (treeP > 0.25) {
+    const branchA = Math.min(1, (treeP - 0.25) / 0.4);
+    drawBranches(cx, trunkTop, trunkH, treeP, branchA, p);
+  }
+
+  // Canopy layers
+  drawCanopy(cx, trunkTop, treeP, p);
+
+  // Firefly-like bioluminescent dots on canopy when > 0.35
+  if (treeP > 0.35) {
+    const dotA = Math.min(1, (treeP-0.35)/0.2);
+    const t = Date.now() / 1000;
+    const cR = treeP * H * 0.28;
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * Math.PI * 2;
+      const r = cR * (0.4 + Math.random() * 0.5);
+      const bx = cx + Math.cos(angle + t*0.1) * r * 0.9 * treeP;
+      const by = trunkTop - 30 - Math.sin(angle + t*0.12) * r * 0.7 * treeP;
+      const pulse = 0.4 + 0.6 * Math.sin(t * 1.5 + i * 1.2);
+      treeCtx.beginPath();
+      treeCtx.arc(bx, by, 2, 0, Math.PI*2);
+      treeCtx.fillStyle = `rgba(201,168,76,${pulse * dotA * 0.8})`;
+      treeCtx.fill();
+    }
+  }
+
+  treeCtx.restore();
+}
+
+function drawBranches(cx, trunkTop, trunkH, treeP, alpha, skyP) {
+  const lensP = skyP > 0.7 ? 1 : 0;
+  const bCol = `rgba(${85+lensP*25},${55+lensP*18},${24+lensP*8},${alpha * 0.85})`;
+  treeCtx.strokeStyle = bCol;
+  treeCtx.lineCap = 'round';
+  const branches = [
+    { yFrac: 0.75, angle: -0.7, len: 0.14, w: 3.5 },
+    { yFrac: 0.75, angle:  0.7, len: 0.14, w: 3.5 },
+    { yFrac: 0.55, angle: -0.9, len: 0.18, w: 2.8 },
+    { yFrac: 0.55, angle:  0.9, len: 0.18, w: 2.8 },
+    { yFrac: 0.35, angle: -1.1, len: 0.22, w: 2 },
+    { yFrac: 0.35, angle:  1.1, len: 0.22, w: 2 },
+    { yFrac: 0.2,  angle: -1.3, len: 0.14, w: 1.5 },
+    { yFrac: 0.2,  angle:  1.3, len: 0.14, w: 1.5 },
+  ];
+  branches.forEach(b => {
+    const by = trunkTop + trunkH * (1 - b.yFrac);
+    const bxOff = Math.cos(b.angle) * trunkH * b.len * treeP;
+    const byOff = -Math.sin(Math.abs(b.angle)) * trunkH * b.len * treeP * 0.6;
+    treeCtx.lineWidth = b.w;
+    treeCtx.beginPath();
+    treeCtx.moveTo(cx, by);
+    treeCtx.quadraticCurveTo(cx + bxOff * 0.5, by + byOff * 0.5 - 10, cx + bxOff, by + byOff);
+    treeCtx.stroke();
+  });
+}
+
+function drawCanopy(cx, trunkTop, treeP, skyP) {
+  if (treeP <= 0) return;
+  const r = treeP * H * 0.29;
+  const cyTop = trunkTop - r * 0.5;
+
+  // Color: night dark green -> twilight mid -> golden-lit
+  const greenBase = skyP > 0.7 ? Math.min(1, (skyP-0.7)/0.25) : 0;
+  const g0 = Math.round(45 + greenBase * 40);
+  const g1 = Math.round(90 + greenBase * 60);
+  const g2 = Math.round(61 + greenBase * 35);
+
+  // Multiple overlapping ellipses for organic canopy
+  const layers = [
+    { xOff: 0,   yOff: 0,     rx: r,       ry: r * 0.88, a: 0.45 },
+    { xOff: -r*0.28, yOff: r*0.1, rx: r*0.72, ry: r*0.72, a: 0.55 },
+    { xOff:  r*0.28, yOff: r*0.08, rx: r*0.68, ry: r*0.70, a: 0.52 },
+    { xOff: -r*0.15, yOff:-r*0.25, rx: r*0.62, ry: r*0.60, a: 0.60 },
+    { xOff:  r*0.18, yOff:-r*0.28, rx: r*0.58, ry: r*0.58, a: 0.58 },
+    { xOff: 0,   yOff:-r*0.42, rx: r*0.50, ry: r*0.50, a: 0.68 },
+    { xOff: 0,   yOff:-r*0.58, rx: r*0.36, ry: r*0.36, a: 0.78 },
+    // Highlight blob
+    { xOff:-r*0.18, yOff:-r*0.55, rx: r*0.24, ry: r*0.22, a: 0.28 },
+  ];
+
+  layers.forEach((l, i) => {
+    const brightness = i / layers.length;
+    const gr = Math.round(g0 + brightness * 30);
+    const gg = Math.round(g1 + brightness * 40);
+    const gb = Math.round(g2 + brightness * 22);
+    treeCtx.beginPath();
+    treeCtx.ellipse(cx + l.xOff, cyTop + l.yOff, l.rx, l.ry, 0, 0, Math.PI*2);
+    treeCtx.fillStyle = `rgba(${gr},${gg},${gb},${l.a})`;
+    treeCtx.fill();
+  });
+
+  // Golden-hour sunlit edge glow
+  if (skyP > 0.68) {
+    const glowA = Math.min(0.5, (skyP-0.68)/0.2);
+    treeCtx.beginPath();
+    treeCtx.ellipse(cx - r*0.2, cyTop - r*0.3, r*0.85, r*0.82, -0.15, 0, Math.PI*2);
+    treeCtx.fillStyle = `rgba(200,160,50,${glowA * 0.18})`;
+    treeCtx.fill();
+    // Edge highlight (left, lit by golden sun from right/left)
+    const edgeGrad = treeCtx.createRadialGradient(cx - r*0.3, cyTop - r*0.35, r*0.1, cx, cyTop, r);
+    edgeGrad.addColorStop(0, `rgba(220,180,80,${glowA*0.3})`);
+    edgeGrad.addColorStop(1, 'rgba(220,180,80,0)');
+    treeCtx.beginPath();
+    treeCtx.ellipse(cx, cyTop, r*1.05, r*0.98, 0, 0, Math.PI*2);
+    treeCtx.fillStyle = edgeGrad;
+    treeCtx.fill();
+  }
+}
+
+// ════════════════════════════════════
+//  PARTICLES
+// ════════════════════════════════════
+let ffTime = 0;
+function drawFireflies(p, t) {
+  const ffA = p > 0.14 && p < 0.65 ? Math.min(1,(p-0.14)/0.1) * Math.min(1,(0.65-p)/0.07) : 0;
+  if (ffA <= 0) return;
+  fireflies.forEach(f => {
+    f.x += f.vx + Math.sin(t * 0.3 + f.phase) * 0.4;
+    f.y += f.vy + Math.cos(t * 0.25 + f.phase) * 0.3;
+    if (f.x < W*0.15) f.x = W*0.85;
+    if (f.x > W*0.85) f.x = W*0.15;
+    if (f.y < H*0.2)  f.y = H*0.7;
+    if (f.y > H*0.75) f.y = H*0.3;
+    f.phase += f.phaseSpeed;
+    const glow = 0.3 + 0.7 * Math.abs(Math.sin(f.phase));
+    particCtx.beginPath();
+    particCtx.arc(f.x, f.y, f.r * glow, 0, Math.PI*2);
+    particCtx.fillStyle = `rgba(201,168,76,${glow * ffA * 0.9})`;
+    particCtx.fill();
+    // Glow halo
+    const rad = particCtx.createRadialGradient(f.x, f.y, 0, f.x, f.y, f.r * 5);
+    rad.addColorStop(0, `rgba(201,168,76,${glow*ffA*0.3})`);
+    rad.addColorStop(1, 'rgba(201,168,76,0)');
+    particCtx.beginPath();
+    particCtx.arc(f.x, f.y, f.r * 5, 0, Math.PI*2);
+    particCtx.fillStyle = rad;
+    particCtx.fill();
+  });
+}
+
+function drawRain(p) {
+  const rainA = p > 0.57 && p < 0.76 ? Math.min(1,(p-0.57)/0.06) * Math.min(1,(0.76-p)/0.06) : 0;
+  if (rainA <= 0) return;
+  particCtx.strokeStyle = `rgba(100,180,220,${rainA * 0.35})`;
+  particCtx.lineWidth = 1;
+  particCtx.lineCap = 'round';
+  raindrops.forEach(r => {
+    r.y += r.speed;
+    r.x -= 1.5; // slight angle
+    if (r.y > H) { r.y = -20; r.x = Math.random() * W; }
+    particCtx.beginPath();
+    particCtx.moveTo(r.x, r.y);
+    particCtx.lineTo(r.x - r.len * 0.15, r.y + r.len);
+    particCtx.stroke();
+  });
+}
+
+// ════════════════════════════════════
+//  PANEL VISIBILITY
+// ════════════════════════════════════
+// Each panel: [showAt, hideAt] in prog units
+const panelTiming = {
+  p0: [0.00, 0.12],
+  p1: [0.12, 0.27],
+  p2: [0.27, 0.44],
+  p3: [0.44, 0.57],
+  p4: [0.57, 0.70],
+  p5: [0.70, 0.85],
+  p6: [0.85, 1.01],
+};
+
+function updatePanels(p) {
+  Object.entries(panelTiming).forEach(([id, [show, hide]]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const margin = 0.015;
+    if (p >= show + margin && p < hide - margin) {
+      el.classList.add('visible');
+      el.classList.remove('fade-out');
+    } else if (p >= hide - margin) {
+      el.classList.remove('visible');
+      el.classList.add('fade-out');
+    } else {
+      el.classList.remove('visible','fade-out');
+    }
+  });
+
+  // Scroll hint
+  const hint = document.getElementById('scroll-hint');
+  hint.style.opacity = p < 0.05 ? '1' : '0';
+
+  // Sound waves (panel 3 era)
+  const sw = document.getElementById('sound-waves');
+  const swA = p > 0.44 && p < 0.58 ? 1 : 0;
+  sw.classList.toggle('visible', swA > 0);
+
+  // Water drops (panel 4 era)
+  const wd = document.getElementById('water-drops');
+  const wdA = p > 0.57 && p < 0.72 ? 1 : 0;
+  wd.classList.toggle('visible', wdA > 0);
+
+  // Sensor badge
+  const sb = document.getElementById('sensor-badge');
+  const sbA = p > 0.57 && p < 0.72 ? 1 : 0;
+  sb.classList.toggle('visible', sbA > 0);
+
+  // Stats pop
+  if (p > 0.72 && p < 0.88) {
+    document.querySelectorAll('.stat-item').forEach(s => s.classList.add('popped'));
+    animateStats(p);
+  } else if (p <= 0.72) {
+    document.querySelectorAll('.stat-item').forEach(s => s.classList.remove('popped'));
+  }
+}
+
+let statsAnimated = false;
+const statTargets = { trees: 2847, water: 42830, calm: 91, co2: 3640 };
+const statCurrent = { trees: 0, water: 0, calm: 0, co2: 0 };
+
+function animateStats(p) {
+  const t = Math.min(1, (p - 0.72) / 0.08);
+  const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+  document.getElementById('stat-trees').textContent = Math.round(statTargets.trees * ease).toLocaleString();
+  document.getElementById('stat-water').textContent = Math.round(statTargets.water * ease).toLocaleString() + 'L';
+  document.getElementById('stat-calm').textContent  = Math.round(statTargets.calm * ease) + '%';
+  document.getElementById('stat-co2').textContent   = Math.round(statTargets.co2 * ease).toLocaleString() + 'kg';
+}
+
+// ════════════════════════════════════
+//  BUILD SOUND WAVES
+// ════════════════════════════════════
+(function buildSoundWaves() {
+  const container = document.getElementById('sound-waves');
+  const heights = [8,14,22,32,28,38,42,36,28,20,32,40,36,22,14,10,16,26,34,38,30,20,12,8];
+  heights.forEach((h, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'sw-bar';
+    bar.style.cssText = `
+      --mn: ${Math.max(4, h*0.25)}px;
+      --mx: ${h}px;
+      --s: ${0.5 + Math.random()*0.9}s;
+      --dl: ${i * 0.04}s;
+    `;
+    container.appendChild(bar);
+  });
+})();
+
+// ════════════════════════════════════
+//  MIST
+// ════════════════════════════════════
+function updateMist(p) {
+  const mist = document.getElementById('mist');
+  // Mist appears at twilight (0.42-0.6) and golden hour (0.65+)
+  const mistA = (p > 0.4 && p < 0.62) ? Math.min(1,(p-0.4)/0.1)*Math.min(1,(0.62-p)/0.08)
+              : (p > 0.65) ? Math.min(1,(p-0.65)/0.1)*0.4 : 0;
+  mist.style.opacity = mistA;
+  mist.style.background = p > 0.65
+    ? `linear-gradient(to top, rgba(180,160,100,${mistA*0.12}), transparent)`
+    : `linear-gradient(to top, rgba(140,180,160,${mistA*0.18}), transparent)`;
+}
+
+// ════════════════════════════════════
+//  MAIN LOOP
+// ════════════════════════════════════
+let animFrame;
+let lastT = 0;
+function loop(ts) {
+  const t = ts / 1000;
+  particCtx.clearRect(0, 0, W, H);
+
+  drawSky(prog);
+  drawStars(prog, t);
+  updateCelestial(prog);
+  drawGround(prog);
+  drawTree(prog);
+  drawFireflies(prog, t);
+  drawRain(prog);
+  updateMist(prog);
+  updatePanels(prog);
+
+  // Progress bar
+  document.getElementById('progress-bar').style.width = (prog * 100) + '%';
+
+  animFrame = requestAnimationFrame(loop);
+}
+
+// ════════════════════════════════════
+//  SCROLL HANDLER
+// ════════════════════════════════════
+function onScroll() {
+  const scrollH = document.documentElement.scrollHeight - window.innerHeight;
+  prog = Math.max(0, Math.min(1, window.scrollY / scrollH));
+}
+
+window.addEventListener('scroll', onScroll, { passive: true });
+
+window.addEventListener('resize', () => {
+  resize();
+  buildFireflies();
+  buildRain();
+});
+
+// ════════════════════════════════════
+//  INIT
+// ════════════════════════════════════
+resize();
+buildFireflies();
+buildRain();
+onScroll();
+requestAnimationFrame(loop);
+
+// Touch/keyboard support
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown') window.scrollBy(0, 200);
+  if (e.key === 'ArrowUp')   window.scrollBy(0, -200);
+});
+</script>
+</body>
+</html>
